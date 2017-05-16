@@ -30,19 +30,20 @@ void chardev_cleanup(int device_major, const char* device_name)
 int chardev_open(struct inode* inode, struct file* file){
     try_module_get(THIS_MODULE);
     buf = kmalloc(buf_size, GFP_KERNEL);
-    memset(buf, '@', buf_size);
+    memset(buf, '@', buf_size - 1);
+    buf[buf_size - 1] = '$';
     return 0;
 }
 
 ssize_t chardev_read(struct file* file, char __user * usr_buf, size_t size, loff_t* offset){
     int ret = -1;
-    int count = 3;
+    int count = 15;
     if(*offset >= buf_size){
         return 0;
     }
 
     if(*offset + count > buf_size){
-        count = buf_size - offset;
+        count = buf_size - *offset;
     }
 
     if((ret = copy_to_user(usr_buf, buf + *offset, count))){
